@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тамхины хор уршиг — Тоглоом</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:sans-serif;background:#f8f7f4;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;}
+.wrap{width:100%;max-width:480px;background:#fff;border-radius:16px;border:1px solid #e8e6e0;padding:1.5rem;min-height:400px;}
+.screen{display:none;}
+.screen.active{display:block;}
+.center{text-align:center;}
+.icon-circle{width:64px;height:64px;background:#FAECE7;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;}
+h1{font-size:20px;font-weight:600;color:#1a1a1a;margin-bottom:8px;}
+.sub{font-size:14px;color:#666;margin-bottom:1.5rem;line-height:1.6;}
+.badge-row{display:flex;justify-content:center;gap:10px;margin-bottom:1.5rem;}
+.badge{padding:4px 14px;border-radius:20px;font-size:12px;font-weight:500;}
+.badge.teal{background:#E1F5EE;color:#085041;}
+.badge.coral{background:#FAECE7;color:#712B13;}
+.btn{display:inline-block;padding:11px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:opacity 0.15s;}
+.btn.primary{background:#D85A30;color:#fff;}
+.btn.primary:hover{opacity:0.88;}
+.btn.outline{background:#fff;color:#1a1a1a;border:1px solid #d0cec8;}
+.btn.outline:hover{background:#f5f4f1;}
+.progress-bar{height:6px;background:#f0ede8;border-radius:6px;margin-bottom:1.25rem;overflow:hidden;}
+.progress-fill{height:100%;background:#D85A30;border-radius:6px;transition:width 0.4s;}
+.q-num{font-size:12px;color:#888;margin-bottom:6px;}
+.q-text{font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:1.25rem;line-height:1.6;}
+.options{display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem;}
+.opt{padding:12px 16px;border:1px solid #e8e6e0;border-radius:10px;font-size:14px;color:#1a1a1a;cursor:pointer;background:#fff;text-align:left;transition:border-color 0.15s,background 0.15s;line-height:1.4;}
+.opt:hover:not(.disabled){border-color:#aaa;background:#fafaf8;}
+.opt.correct{background:#EAF3DE;border-color:#3B6D11;color:#27500A;}
+.opt.wrong{background:#FCEBEB;border-color:#A32D2D;color:#791F1F;}
+.opt.disabled{cursor:default;}
+.feedback{padding:12px 16px;border-radius:10px;font-size:13px;line-height:1.6;margin-bottom:1rem;}
+.feedback.correct{background:#EAF3DE;color:#27500A;}
+.feedback.wrong{background:#FCEBEB;color:#791F1F;}
+.next-btn-wrap{text-align:right;}
+.score-ring{width:100px;height:100px;margin:0 auto 1rem;position:relative;}
+.score-ring svg{width:100px;height:100px;}
+.score-val{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:22px;font-weight:700;color:#1a1a1a;}
+.result-msg{font-size:16px;font-weight:600;color:#1a1a1a;margin-bottom:6px;}
+.result-sub{font-size:13px;color:#666;margin-bottom:1.5rem;line-height:1.6;}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.5rem;}
+.stat{background:#f5f4f1;border-radius:10px;padding:12px 8px;text-align:center;}
+.stat-n{font-size:22px;font-weight:700;color:#1a1a1a;}
+.stat-l{font-size:11px;color:#888;margin-top:2px;}
+.btn-row{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="screen active" id="start">
+  <div class="center">
+    <div class="icon-circle">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#D85A30" stroke-width="2" stroke-linecap="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+    <h1>Тамхины хор уршиг</h1>
+    <p class="sub">10 асуултад хариулж, тамхины талаарх<br>мэдлэгээ шалга. Нэг асуултад 10 оноо.</p>
+    <div class="badge-row">
+      <span class="badge teal">10 асуулт</span>
+      <span class="badge coral">100 оноо</span>
+    </div>
+    <button class="btn primary" onclick="startGame()">Тоглоом эхлэх</button>
+  </div>
+</div>
+
+<div class="screen" id="game">
+  <div class="progress-bar"><div class="progress-fill" id="prog"></div></div>
+  <div class="q-num" id="qnum"></div>
+  <div class="q-text" id="qtext"></div>
+  <div class="options" id="opts"></div>
+  <div class="feedback" id="feedback" style="display:none;"></div>
+  <div class="next-btn-wrap">
+    <button class="btn primary" id="nextbtn" style="display:none;" onclick="nextQ()">Дараах →</button>
+  </div>
+</div>
+
+<div class="screen" id="result">
+  <div class="center">
+    <div class="score-ring">
+      <svg viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="42" fill="none" stroke="#f0ede8" stroke-width="8"/>
+        <circle cx="50" cy="50" r="42" fill="none" stroke="#D85A30" stroke-width="8"
+          stroke-dasharray="264" id="ringFill" stroke-dashoffset="264"
+          stroke-linecap="round" transform="rotate(-90 50 50)" style="transition:stroke-dashoffset 1s;"/>
+      </svg>
+      <div class="score-val" id="scoreVal">0</div>
+    </div>
+    <div class="result-msg" id="resultMsg"></div>
+    <div class="result-sub" id="resultSub"></div>
+    <div class="stat-grid">
+      <div class="stat"><div class="stat-n" id="rCorrect">0</div><div class="stat-l">Зөв</div></div>
+      <div class="stat"><div class="stat-n" id="rWrong">0</div><div class="stat-l">Буруу</div></div>
+      <div class="stat"><div class="stat-n" id="rScore">0</div><div class="stat-l">Оноо</div></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn outline" onclick="startGame()">Дахин тоглох</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<script>
+const ALL_QS = [
+  {q:"Тамхи татдаг хүнд уушигны хорт хавдар үүсэх эрсдэл татдаггүй хүнтэй харьцуулахад хэд дахин их байдаг вэ?",opts:["5 дахин","15–30 дахин","3 дахин","50 дахин"],ans:1,exp:"Тамхичдад уушигны хорт хавдар үүсэх эрсдэл 15–30 дахин их байдаг. Энэ нь дэлхийн хэмжээнд хамгийн том хорт хавдрын шалтгаан юм."},
+  {q:"Никотин тархинд хэдэн секундийн дотор хүрдэг вэ?",opts:["30 секунд","2 минут","7–10 секунд","1 минут"],ans:2,exp:"Никотин ердөө 7–10 секундийн дотор тархинд хүрдэг. Ийм хурдан нөлөөлдөг учраас маш хүчтэй донтолт үүсгэдэг."},
+  {q:"Тамхины хоёрдогч утаанд хэдэн хорт бодис агуулагддаг вэ?",opts:["10 гаруй","30 гаруй","70 гаруй","5 гаруй"],ans:2,exp:"Хоёрдогч утаанд 70 гаруй хорт бодис агуулагддаг. Тамхи татдаггүй хүн ч гэсэн энэ утаанаас хорт хавдрын эрсдэлд өртдөг."},
+  {q:"Жирэмсэн эм хүн тамхи татвал хүүхдэд ямар эрсдэл нэмэгддэг вэ?",opts:["Нүдний эмгэг","Хөлний хугарал","Уушигны дутуу хөгжил ба ХАСУ","Арьсны өвчин"],ans:2,exp:"Тамхи татах нь ургийн уушигны хөгжилд саад болж, ХАСУ болон эрт төрөлтийн эрсдэлийг нэмэгдүүлдэг."},
+  {q:"Тамхи татах нь зүрхний шигдээсний эрсдэлийг хэд дахин нэмэгдүүлдэг вэ?",opts:["10 дахин","2–4 дахин","1.5 дахин","7 дахин"],ans:1,exp:"Никотин цусны судасыг гэмтээж холестерины хуримтлалыг нэмэгдүүлдэг тул зүрхний шигдээс, цус харвалтын эрсдэл 2–4 дахин нэмэгддэг."},
+  {q:"Тамхи татах нь хөгшрөлтийг хэдэн жилээр хурдасгадаг вэ?",opts:["2–3 жил","5 жил","10–20 жил","1 жил"],ans:2,exp:"Никотин арьсны цусан хангамжийг бууруулж хөгшрөлтийг 10–20 жилээр хурдасгадаг."},
+  {q:"Дэлхийд жилд уушигны хорт хавдараас хэдэн хүн нас бардаг вэ?",opts:["500,000","1.8 сая","3 сая","200,000"],ans:1,exp:"Жилд ойролцоогоор 1.8 сая хүн уушигны хорт хавдараас нас бардаг. Энэ нь дэлхийн хамгийн их нас баралт авчирдаг хорт хавдар юм."},
+  {q:"Тамхи зогсоох үед аль шинж тэмдэг илэрдэг вэ?",opts:["Нойр дутагдал","Цочромтгой байдал ба сэтгэл гутрал","Дулааны мэдрэмж","Хоол идэх дургүй болох"],ans:1,exp:"Никотиний донтолт зогсоход цочромтгой байдал, сэтгэл гутрал, татах мэдрэмж зэрэг цочмог хам шинж илэрдэг."},
+  {q:"Хоёрдогч утаанд өртсөн хүнд уушигны хорт хавдрын эрсдэл хэдэн хувиар нэмэгддэг вэ?",opts:["5%","50%","20–30%","10%"],ans:2,exp:"Тогтмол хоёрдогч утаанд өртвөл уушигны хорт хавдар, зүрхний өвчний эрсдэл 20–30% нэмэгддэг нь судалгаагаар тогтоогдсон."},
+  {q:"Монголд өдөрт 1 хайрцаг тамхи татвал жилд ойролцоогоор хэдэн төгрөг зарцуулдаг вэ?",opts:["100,000–200,000₮","500,000–700,000₮","1,000,000₮+","50,000₮"],ans:1,exp:"Монголд нэг хайрцаг тамхины үнэ 1,500–2,000₮ орчим байдаг тул жилд 500,000–700,000₮ зарцуулдаг."}
+];
+
+let qs=[],cur=0,score=0,correct=0;
+function shuffle(a){return a.sort(()=>Math.random()-0.5);}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function startGame(){qs=shuffle([...ALL_QS]).slice(0,10);cur=0;score=0;correct=0;show('game');renderQ();}
+function renderQ(){
+  const q=qs[cur];
+  document.getElementById('prog').style.width=((cur/10)*100)+'%';
+  document.getElementById('qnum').textContent=(cur+1)+' / 10';
+  document.getElementById('qtext').textContent=q.q;
+  document.getElementById('feedback').style.display='none';
+  document.getElementById('nextbtn').style.display='none';
+  const opts=document.getElementById('opts');
+  opts.innerHTML='';
+  q.opts.map((o,i)=>({o,i})).sort(()=>Math.random()-0.5).forEach(({o,i})=>{
+    const b=document.createElement('button');
+    b.className='opt';b.textContent=o;
+    b.onclick=()=>pick(i,b,q);
+    opts.appendChild(b);
+  });
+}
+function pick(idx,btn,q){
+  document.querySelectorAll('.opt').forEach(o=>{
+    o.classList.add('disabled');
+    if(o.textContent===q.opts[q.ans])o.classList.add('correct');
+  });
+  const fb=document.getElementById('feedback');
+  fb.style.display='block';
+  if(idx===q.ans){btn.classList.add('correct');fb.className='feedback correct';fb.textContent='Зөв! '+q.exp;score+=10;correct++;}
+  else{btn.classList.add('wrong');fb.className='feedback wrong';fb.textContent='Буруу. '+q.exp;}
+  document.getElementById('nextbtn').style.display='inline-block';
+}
+function nextQ(){cur++;if(cur>=10)showResult();else renderQ();}
+function showResult(){
+  show('result');
+  document.getElementById('scoreVal').textContent=score;
+  document.getElementById('rCorrect').textContent=correct;
+  document.getElementById('rWrong').textContent=10-correct;
+  document.getElementById('rScore').textContent=score;
+  setTimeout(()=>{document.getElementById('ringFill').style.strokeDashoffset=(264*(1-score/100));},100);
+  const msgs=[
+    [90,'Гайхалтай! Та маш сайн мэддэг байна','Тамхины хор уршгийг бүрэн ойлгосон байна. Энэ мэдлэгээ найз нөхөддөө хуваалц!'],
+    [70,'Сайн байна! Мэдлэг хангалттай','Дийлэнх асуултанд зөв хариулсан байна. Бага зэрэг давтан үзэхэд бүр ахина.'],
+    [50,'Дундаж үр дүн','Тамхины хор уршгийг илүү гүнзгий судлах хэрэгтэй байна. Дахин оролдоод үзнэ үү!'],
+    [0,'Мэдлэгээ нэмэгдүүлэх цаг болжээ','Тамхины хор уршгийн талаар илүү ихийг мэдэж авах нь чухал. Дахин тоглоод үзнэ үү!']
+  ];
+  const [,msg,sub]=msgs.find(([t])=>score>=t);
+  document.getElementById('resultMsg').textContent=msg;
+  document.getElementById('resultSub').textContent=sub;
+}
+</script>
+</body>
+</html>
